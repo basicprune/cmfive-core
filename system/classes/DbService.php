@@ -87,6 +87,11 @@ class DbService
         return formatDate($time ? $time : time(), $format, false);
     }
 
+    public function fixTime($v){
+      
+       return new DateTime($v, new DateTimeZone("utc"));
+    }
+
     /**
      * Formats a timestamp
      * per default MySQL date format is used
@@ -221,11 +226,13 @@ class DbService
         }
         // Move date conversion to SQL.
         // Automatically converts keys with different database values
-        $parts = [];
+         $parts = [];
         foreach ($object->getDbTableColumnNames() as $k) {
-            if (0 === strpos($k, 'dt_') || 0 === strpos($k, 'd_')) {
+            if (0 === strpos($k, 'dt_' || 0 === strpos($k, 'd_'))) {
                 // This is MySQL specific!
-                $parts[] = "UNIX_TIMESTAMP($table.`" . $object->getDbColumnName($k) . "`) AS `$k`";
+
+                $parts[] = "DateTime($table.`" . $object->getDbColumnName($k) . "`) AS `$k`";
+
             } elseif ($k != $object->getDbColumnName($k)) {
                 $parts[] = "`" . $object->getDbColumnName($k) . "` as `$k`";
             } else {
