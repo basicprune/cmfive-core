@@ -89,6 +89,9 @@
                     login: _this.login,
                     password: _this.password,
                     mfa_code: _this.mfa_code,
+                    // this detects users system timezone
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                   
                 }).then(function(response) {
                     if (response.data.redirect_url != null) {
                         window.location.href = response.data.redirect_url;

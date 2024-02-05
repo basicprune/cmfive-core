@@ -202,9 +202,15 @@ class TaskService extends DbService
     // return a date one month in advance of 'today'
     public function getNextMonth()
     {
-        $cd = strtotime(date("Y-m-d"));
-        $newdate = date("d/m/Y", mktime(0, 0, 0, date("m", $cd) + 1, date("d", $cd), date("Y", $cd)));
-        return $newdate;
+        // uses DateTime instead of strtotime()
+        $currentDate = new DateTime('now', new DateTimeZone("utc"));
+        $ModefiedDate = $currentDate->add(DateInterval::createFromDateString("1 month"));
+
+        return $ModefiedDate;
+
+        //$cd = strtotime(date("Y-m-d"));
+        //$newdate = date("d/m/Y", mktime(0, 0, 0, date("m", $cd) + 1, date("d", $cd), date("Y", $cd)));
+        //return $newdate;
     }
 
     // mark up URLS as <a> links

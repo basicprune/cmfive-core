@@ -221,9 +221,20 @@ function edit_POST($w)
 
     $task->assignee_id = intval($_POST['edit']['assignee_id']);
 
-    if (empty($task->dt_due)) {
+    
+    //LogService::getInstance($w)->error("DATETIME ERROR: " . $_POST['edit']['dt_due']);
+    
+    // if dt_due is empty then return a DateTime with the date value of next month from now
+    if (empty($_POST['edit']['dt_due'])) {
         $task->dt_due = TaskService::getInstance($w)->getNextMonth();
+    }else { 
+        $task->dt_due =  DateTime::createFromFormat("d/m/Y" ,$_POST['edit']['dt_due'], new DateTimeZone($_SESSION['timezone']));
+       // LogService::getInstance($w)->error("DATETIME ERROR: " . $task->dt_due->format("Y-m-d"));
     }
+
+     
+
+
     $task->estimate_hours = !empty($task->estimate_hours) ? $task->estimate_hours : null;
     $task->effort = empty($task->effort) ? null : floatval($task->effort);
     $task->rate = empty($task->rate) ? null : $task->rate;

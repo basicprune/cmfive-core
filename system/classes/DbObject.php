@@ -400,8 +400,8 @@ class DbObject extends DbService
     {
         if (strpos($k, "dt_") === 0) {
             if (!empty($v)) {
-                
-                return $this->fixTime($v)->format('d:m:Y H:i:s');
+                return $this->dt2Time($v);
+                //return $this->fixTime($v)->format('d:m:Y H:i:s');
             }
         } elseif (strpos($k, "d_") === 0) {
             if (!empty($v)) {
@@ -663,8 +663,12 @@ class DbObject extends DbService
             if (!property_exists($this, "_modifiable")) { // $this->_modifiable) {
                 // for backwards compatibility
                 if (in_array("dt_created", $columns) && !isset($this->dt_created)) {
+
+                   // $this->dt_created = time();
+
+                    // using DateTime to avoid using timestamps
                     $dt = new DateTime("now", new DateTimeZone("utc"));
-                    $this->dt_created = $dt->format("Y-m-d H:i:s");
+                    $this->dt_created = $dt;
                 }
 
                 if (in_array("creator_id", $columns) && AuthService::getInstance($this->w)->loggedIn() && !isset($this->creator_id)) {
@@ -672,8 +676,12 @@ class DbObject extends DbService
                 }
 
                 if (in_array("dt_modified", $columns) && !isset($this->dt_modified)) {
+
+                   // $this->dt_modified = time();
+
+                    
                     $dt = new DateTime("now", new DateTimeZone("utc"));
-                    $this->dt_modified = $dt->format("Y-m-d H:i:s");
+                    $this->dt_modified = $dt;
                 }
 
                 if (in_array("modifier_id", $columns) && AuthService::getInstance($this->w)->loggedIn() && !isset($this->modifier_id)) {
@@ -1051,6 +1059,7 @@ class DbObject extends DbService
         $exclude = ["dt_created", "dt_modified", "w"];
 
         foreach (get_object_vars($this) as $k => $v) {
+
             if (
                 substr($k, 0, 1) != "_" // ignore volatile vars
                 && (!property_exists($this, "_exclude_index") // ignore properties that should be excluded
@@ -1059,7 +1068,8 @@ class DbObject extends DbService
                 if ($k == "id") {
                     $str .= "id" . $v . " ";
                 } else {
-                    $str .= $v . " ";
+                    $str .= $this->updateConvert($k, $v) . " ";
+                   // $str .= $v . " ";
                 }
             }
         }
@@ -1322,22 +1332,31 @@ class DbObject extends DbService
     {
         if (strpos($k, "dt_") === 0) {
              if (!empty($v)) {
-               // var_dump($v->format('d:m:Y H:i:s')); die;
-                $v = $v->format('Y-m-d H:i:s');
-               
-                return $this->fixTime($v)->format('Y-m-d H:i:s');
-            //    //return $this;
-              } 
-        } elseif (strpos($k, "d_") === 0) {
-            if (!empty($v)) {
-                return $this->time2D($v);
+                //return $this->time2Dt($v);
+                if ($v instanceof DateTime){
+                    $v->setTimezone(new DateTimeZone("utc")); 
+                    return $v->format("Y-m-d H:i:s");
+                }else {
+                    return null;
+                }
+                
             } else {
                 return null;
             }
+        } elseif (strpos($k, "d_") === 0) {
+            //return $this->time2D($v);
+            if ($v instanceof DateTime){
+                $v->setTimezone(new DateTimeZone("utc"));
+                return $v->format("Y-m-d H:i:s");
+            }else {
+                return null;
+            }
         } elseif (strpos($k, "t_") === 0) {
-            if (!empty($v) && is_int($v)) {
-                return $this->time2T($v);
-            } else {
+            //return $this->time2T($v);
+            if ($v instanceof DateTime){
+                $v->setTimezone(new DateTimeZone("utc"));
+                return $v->format("Y-m-d H:i:s");
+            }else {
                 return null;
             }
         } elseif (strpos($k, "s_") === 0) {

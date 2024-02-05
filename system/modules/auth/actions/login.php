@@ -56,7 +56,7 @@ function login_POST(Web $w)
         return;
     }
 
-    $user = AuthService::getInstance($w)->login($login, $password, "Australia/Sydney", false, $mfa_code);
+    $user = AuthService::getInstance($w)->login($login, $password, $request_data['timezone'], false, $mfa_code);
     if (empty($user)) {
         if (Config::get('auth.login.attempts.track_attempts', false) === true) {
             AuthService::getInstance($w)->recordLoginAttempt($login);
