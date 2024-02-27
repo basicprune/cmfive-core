@@ -116,6 +116,11 @@ class DbService
         return strtotime(str_replace("/", "-", $dt));
     }
 
+    public function string2Dt($dt_string)
+    {
+        return new Datetime($dt_string, new DateTimeZone('utc'));
+    }
+
     public function d2Time($d)
     {
         return strtotime(str_replace("/", "-", $d));
@@ -230,12 +235,13 @@ class DbService
         // Automatically converts keys with different database values
         $parts = [];
         foreach ($object->getDbTableColumnNames() as $k) {
-            if (0 === strpos($k, 'dt_') || 0 === strpos($k, 'd_')) {
-                // This is MySQL specific!
-                $parts[] = "UNIX_TIMESTAMP($table.`" . $object->getDbColumnName($k) . "`) AS `$k`";
+            // if (0 === strpos($k, 'dt_') || 0 === strpos($k, 'd_')) {
+            //     // This is MySQL specific!
+            //     $parts[] = "TIMESTAMP($table.`" . $object->getDbColumnName($k) . "`) AS `$k`";
 
 
-            } elseif ($k != $object->getDbColumnName($k)) {
+            // } else
+            if ($k != $object->getDbColumnName($k)) {
                 $parts[] = "`" . $object->getDbColumnName($k) . "` as `$k`";
             } else {
                 $parts[] = $k;
@@ -365,8 +371,25 @@ class DbService
         // We make this convert in the db query now but there are times when using getObjectFromRow
         // where you may have made the query yourself (and therefore no UNIX() cast in mysql)
         // It also happens that the $from_db flag is inversely related to the convert parameter below
+
+
+
         $o->fill($row, !$from_db);
 
+        // single through all db columns 
+       
+        foreach(get_object_vars($o) as $k => $v) {
+
+            if (strpos($k, "dt_") === 0 || strpos($k, "d_") === 0 || strpos($k, "t_") === 0) 
+            {
+                if (!empty($v) && !$v instanceof Datetime) {
+                    // convert string to DateTime, Assume string is in 'utc'
+                     $o->$k = new DateTime($v, new DateTimeZone('utc'));
+                }
+            }
+           
+        }
+        
         // test implementation for preserving original database values
         if ($from_db == true) {
             $o->__old = $row;

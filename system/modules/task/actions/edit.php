@@ -84,7 +84,7 @@ function edit_GET($w)
             ],
             [
                 ["Priority", "select", "priority", $task->priority, $priority],
-                ["Date Due", "date", "dt_due", formatDate($task->dt_due)],
+                ["Date Due", "date", "dt_due", !empty($p["id"]) ? $task->dt_due->setTimezone(new DateTimeZone($_SESSION['usertimezone']))->format("d/m/Y") : ""], 
                 (new Select([
                     "id|name" => "assignee_id",
                     "label" => "Assigned To",
@@ -223,13 +223,11 @@ function edit_POST($w)
 
     
     //LogService::getInstance($w)->error("DATETIME ERROR: " . $_POST['edit']['dt_due']);
-    
     // if dt_due is empty then return a DateTime with the date value of next month from now
     if (empty($_POST['edit']['dt_due'])) {
         $task->dt_due = TaskService::getInstance($w)->getNextMonth();
     }else { 
-        $task->dt_due =  DateTime::createFromFormat("d/m/Y" ,$_POST['edit']['dt_due'], new DateTimeZone($_SESSION['timezone']));
-       // LogService::getInstance($w)->error("DATETIME ERROR: " . $task->dt_due->format("Y-m-d"));
+        $task->dt_due = DateTime::createFromFormat("d/m/Y", $_POST['edit']['dt_due'], new DateTimeZone($_SESSION['usertimezone']));
     }
 
      

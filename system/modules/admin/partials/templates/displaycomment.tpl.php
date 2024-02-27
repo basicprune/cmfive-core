@@ -10,7 +10,7 @@
             <div class="comment_meta">
                 <?php if (!empty($c->dt_created)) : ?>
                     <span data-tooltip aria-haspopup="true" title="<?php echo @formatDate($c->dt_created, "d-M-Y \a\\t H:i"); ?>">
-                        Posted <?php echo Carbon::createFromTimeStamp($c->dt_created)->diffForHumans(); ?>
+                        Posted <?php echo (new Carbon($c->dt_created, new DateTimeZone($_SESSION['usertimezone'])))->diffForHumans(); ?>
                     </span>
                 <?php endif; ?>
                 <?php if (empty($displayOnly) && $external_only === false) : ?>

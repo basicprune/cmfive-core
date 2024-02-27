@@ -456,7 +456,7 @@ class Task extends DbObject
 //            return "Not given";
         }
 
-        if ((!$this->getisTaskClosed()) && (time() > $this->dt_due)) {
+        if ((!$this->getisTaskClosed()) && (new DateTime("now", new DateTimeZone("utc")) > $this->dt_due)) {
             return "<font color=red><b>" . formatDate($this->dt_due) . "</b></font>";
         } else {
             return formatDate($this->dt_due);
@@ -793,6 +793,8 @@ class Task extends DbObject
         }
 
         $date = date("Ymd", strtotime(str_replace('/', '-', $this->dt_due)));
+
+        
 
         $task_creator = $this->getCreator();
         $task_assignee = $this->getAssignee();

@@ -1,5 +1,6 @@
 <?php
 
+
 /**
  * Deduplicates arrays of arrays, something that array_unique can't do.
  * Given an array of arrays, this function will return an array containing only
@@ -424,15 +425,12 @@ function getTimeSelect($start = 8, $end = 19)
  */
 function formatDate($date, $format = "d/m/Y")
 {
-    if (!$date) {
+    if (!$date instanceof DateTime) {
         return null;
     }
 
-    if (!is_long($date) && !is_numeric($date)) {
-        $date = strtotime(str_replace("/", "-", $date));
-    }
-
-    return date($format, $date);
+    return $date->format($format);
+    
 }
 
 /**

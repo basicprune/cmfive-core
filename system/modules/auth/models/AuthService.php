@@ -68,7 +68,7 @@ class AuthService extends DbService
 
         if (!$skip_session) {
             $this->w->session('user_id', $user->id);
-            $this->w->session('timezone', $client_timezone);
+            $this->w->session('usertimezone', $client_timezone);
         }
 
         return $user;

@@ -397,15 +397,13 @@ class DbObject extends DbService
      * @return mixed
      */
     public function readConvert($k, $v)
-    {
-        if (strpos($k, "dt_") === 0) {
-            if (!empty($v)) {
-                return $this->dt2Time($v);
-                //return $this->fixTime($v)->format('d:m:Y H:i:s');
-            }
-        } elseif (strpos($k, "d_") === 0) {
-            if (!empty($v)) {
-                return $this->d2Time($v);
+    { 
+        if (strpos($k, "dt_") === 0 || strpos($k, "d_") === 0) {
+
+            if (!empty($v) && !$v instanceof Datetime) {
+               
+                return $this->string2Dt($v);
+             
             }
         }
         return $v;
@@ -437,6 +435,7 @@ class DbObject extends DbService
      */
     public function fill($row, $convert = false)
     {
+       
         foreach ($this->getObjectVars() as $k) {
             if (array_key_exists($k, $row)) {
                 $this->$k = ($convert ? $this->readConvert($k, $row[$k]) : $row[$k]);
