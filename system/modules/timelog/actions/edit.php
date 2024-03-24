@@ -98,12 +98,12 @@ function edit_POST(Web $w)
     $timelog->object_id = $_POST['object_id'];
     $timelog->time_type = !empty($_POST['time_type']) ? $_POST['time_type'] : null;
 
-    $timelog->dt_start = $time_object->format('Y-m-d H:i:s');
+    $timelog->dt_start = $time_object;//->format('Y-m-d H:i:s');
 
     if ($_POST['select_end_method'] === "time") {
         try {
-            $end_time_object = new DateTime(str_replace('/', '-', $_POST['date_start']) . ' ' . $_POST['time_end']);
-            $timelog->dt_end = $end_time_object->format('Y-m-d H:i:s');
+            $end_time_object = new DateTime($_POST['date_start'] . ' ' . $_POST['time_end']);
+            $timelog->dt_end = $end_time_object;//->format('Y-m-d H:i:s');
         } catch (Exception $e) {
             LogService::getInstance($w)->setLogger("TIMELOG")->error($e->getMessage() . " in " . $e->getFile() . " on line " . $e->getLine());
             $w->error('Invalid start date or time', $redirect ?: '/timelog');
@@ -111,7 +111,7 @@ function edit_POST(Web $w)
     } else {
         if (!empty($_POST['hours_worked']) || !empty($_POST['minutes_worked'])) {
             $time_object->add(new DateInterval("PT" . intval($_POST['hours_worked']) . "H" . (!empty($_POST['minutes_worked']) ? intval($_POST['minutes_worked']) : 0) . "M0S"));
-            $timelog->dt_end = $time_object->format('Y-m-d H:i:s');
+            $timelog->dt_end = $time_object;//->format('Y-m-d H:i:s');
         }
     }
 
