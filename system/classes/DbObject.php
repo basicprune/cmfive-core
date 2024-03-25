@@ -663,9 +663,8 @@ class DbObject extends DbService
                 // for backwards compatibility
                 if (in_array("dt_created", $columns) && !isset($this->dt_created)) {
 
-                   // $this->dt_created = time();
+                   //$this->dt_created = time();
 
-                    // using DateTime to avoid using timestamps
                     $dt = new DateTime("now", new DateTimeZone("utc"));
                     $this->dt_created = $dt;
                 }
@@ -678,7 +677,6 @@ class DbObject extends DbService
 
                    // $this->dt_modified = time();
 
-                    
                     $dt = new DateTime("now", new DateTimeZone("utc"));
                     $this->dt_modified = $dt;
                 }

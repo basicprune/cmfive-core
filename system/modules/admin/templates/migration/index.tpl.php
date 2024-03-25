@@ -156,7 +156,23 @@ use Carbon\Carbon; ?>
                                         $row = [];
                                         $row[] = $migration_data['class_name'];
                                         $row[] = $migration_data['description'];
-                                        $row[] = MigrationService::getInstance($w)->isInstalled($migration_data['class_name']) ? "<span data-tooltip aria-haspopup='true' title='" . @formatDate(MigrationService::getInstance($w)->getMigrationByClassname($migration_data['class_name'])->dt_created, "d-M-Y \a\\t H:i") . "'>Run " . Carbon::createFromTimeStamp(MigrationService::getInstance($w)->getMigrationByClassname($migration_data['class_name'])->dt_created)->diffForHumans() . " by " . (!empty(MigrationService::getInstance($w)->getMigrationByClassname($migration_data['class_name'])->creator_id) && !empty(AuthService::getInstance($w)->getUser(MigrationService::getInstance($w)->getMigrationByClassname($migration_data['class_name'])->creator_id)) ? AuthService::getInstance($w)->getUser(MigrationService::getInstance($w)->getMigrationByClassname($migration_data['class_name'])->creator_id)->getContact()->getFullName() : "System") . "</span>" : "";
+
+                                        $formattedDateString = '';
+                                        if (MigrationService::getInstance($w)->isInstalled($migration_data['class_name'])) {
+                                            $formattedDateString .= "<span data-tooltip aria-haspopup='true' title='";
+                                            $formattedDateString .= @formatDate(MigrationService::getInstance($w)->getMigrationByClassname($migration_data['class_name'])->dt_created, "d-M-Y \a\\t H:i");
+                                            $formattedDateString .= "'>Run " . Carbon::parse(MigrationService::getInstance($w)->getMigrationByClassname($migration_data['class_name'])->dt_created)->diffForHumans() . " by ";
+
+                                            if (!empty(MigrationService::getInstance($w)->getMigrationByClassname($migration_data['class_name'])->creator_id) && !empty(AuthService::getInstance($w)->getUser(MigrationService::getInstance($w)->getMigrationByClassname($migration_data['class_name'])->creator_id))){
+                                                $formattedDateString .= AuthService::getInstance($w)->getUser(MigrationService::getInstance($w)->getMigrationByClassname($migration_data['class_name'])->creator_id)->getContact()->getFullName();
+                                            }else {
+                                                $formattedDateString .=  "System";
+                                            }
+                                            $formattedDateString .= "</span>";
+                                        }
+                                        $row[] = $formattedDateString;
+
+                                        // $row[] = MigrationService::getInstance($w)->isInstalled($migration_data['class_name']) ? "<span data-tooltip aria-haspopup='true' title='" . @formatDate(MigrationService::getInstance($w)->getMigrationByClassname($migration_data['class_name'])->dt_created, "d-M-Y \a\\t H:i") . "'>Run " . Carbon::parse(MigrationService::getInstance($w)->getMigrationByClassname($migration_data['class_name'])->dt_created)->diffForHumans() . " by " . (!empty(MigrationService::getInstance($w)->getMigrationByClassname($migration_data['class_name'])->creator_id) && !empty(AuthService::getInstance($w)->getUser(MigrationService::getInstance($w)->getMigrationByClassname($migration_data['class_name'])->creator_id)) ? AuthService::getInstance($w)->getUser(MigrationService::getInstance($w)->getMigrationByClassname($migration_data['class_name'])->creator_id)->getContact()->getFullName() : "System") . "</span>" : "";
                                         $row[] = $migration_data['pretext'];
                                         $row[] = $migration_data['posttext'];
 

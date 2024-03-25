@@ -29,25 +29,42 @@ class Timelog extends DbObject
     }
 
     // Getters
-    public function getDateStart()
+    public function getDateStart($usertimezone = null)
     {
         if (!empty($this->dt_start)) {
-            return $this->dt_start->format("Y/m/d");
+            if ($usertimezone != null){
+                $this->dt_start->setTimezone($usertimezone);
+            } else {
+                $this->dt_start->setTimezone(new DateTimeZone($_SESSION['usertimezone']));
+            }
+            return $this->dt_start->format("Y-m-d");    
         }
+        
         return null;
     }
-
-    public function getTimeStart()
+    
+    public function getTimeStart($usertimezone = null)
     {
         if (!empty($this->dt_start)) {
+            if ($usertimezone != null){
+                $this->dt_start->setTimezone($usertimezone);
+            } else {
+                $this->dt_start->setTimezone(new DateTimeZone($_SESSION['usertimezone']));
+            }
             return $this->dt_start->format("H:i");
         }
+
         return null;
     }
 
-    public function getTimeEnd()
+    public function getTimeEnd($usertimezone = null)
     {
         if (!empty($this->dt_end)) {
+            if ($usertimezone != null){
+                $this->dt_end->setTimezone($usertimezone);
+            } else {
+                $this->dt_end->setTimezone(new DateTimeZone($_SESSION['usertimezone']));
+            }
             return $this->dt_end->format("H:i");
         }
         return null;

@@ -1,7 +1,5 @@
 <?php
 
-use Html\Form\InputField\Date;
-
 /**
  * General Service class for subclassing in modules.
  *
