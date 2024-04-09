@@ -37,7 +37,7 @@ class AspectModifiable
             $mo = new ObjectModification($this->object->w);
             $mo->table_name = $this->object->getDbTableName();
             $mo->object_id = $this->object->id;
-            $mo->dt_created = time();
+            $mo->dt_created = new Datetime("now");
             $user = AuthService::getInstance($mo->w)->user();
             $mo->creator_id = (!empty($user->id) ? $user->id : 0);
             $mo->insert();

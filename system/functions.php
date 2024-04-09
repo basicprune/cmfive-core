@@ -423,17 +423,18 @@ function getTimeSelect($start = 8, $end = 19)
  * @param string format (optional, default "d/m/Y")
  * @return string|false
  */
-function formatDate($date, $format = "d/m/Y", $usertimezone = null)
+function formatDate($date, $format = "d/m/Y", $timezone = null)
 {
-    if (!$date instanceof DateTime) {
+    $dateModified = new Datetime($date->format("y-m-d H:i:s"), $date->getTimezone());
+    if (!$dateModified instanceof DateTime) {
         return null;
     }
     
-    if ($usertimezone != null){
-        $date->setTimezone(new Datetimezone($usertimezone));
+    if ($timezone != null){
+        $dateModified->setTimezone(new Datetimezone($timezone));
     }
 
-    return $date->format($format);
+    return $dateModified->format($format);
     
 }
 

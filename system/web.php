@@ -623,7 +623,6 @@ class Web
                     session_set_cookie_params(0, '/', $_SERVER['HTTP_HOST'], true, true);
                 }
                 session_start();
-               // $_SESSION['timezone'] 
             } catch (Exception $e) {
                 LogService::getInstance($this)->info("Error starting session " . $e->getMessage());
             }

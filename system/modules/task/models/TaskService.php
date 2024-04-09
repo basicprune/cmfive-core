@@ -389,7 +389,7 @@ class TaskService extends DbService
                 "Assigned to" => !empty($task->assignee_id) ? $task->getAssignee()->getFullName() : '',
                 "Type" => $task->getTypeTitle(),
                 "Title" => $task->title,
-                "Due" => !empty($task->dt_due) ? date('d-m-Y', strtotime(str_replace('/', '-', $task->dt_due))) : '',
+                "Due" => !empty($task->dt_due) ? $task->dt_due : '',
                 "Status" => $task->status,
                 "Priority" => $task->isUrgent() ? "<b style='color: orange;'>{$task->priority}</b>" : $task->priority,
             ];

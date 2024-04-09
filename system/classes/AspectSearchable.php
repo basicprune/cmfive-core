@@ -57,8 +57,7 @@ class AspectSearchable {
 				$io = new ObjectIndex($this->object->w);
 				$io->class_name = get_class($this->object);
 				$io->object_id = $this->object->id;
-				$dt_Object = new DateTime("now", new DateTimeZone("utc"));
-				$io->dt_created = $dt_Object->format("Y-m-d H:i:s");
+				$io->dt_created = new DateTime("now", new DateTimeZone("utc"));
 				$io->creator_id = (AuthService::getInstance($this->object->w)->loggedIn() ? AuthService::getInstance($this->object->w)->user()->id : 0);
 				$io->content = $this->object->getIndexContent($ignoreAdditional);
 				$io->insert();
