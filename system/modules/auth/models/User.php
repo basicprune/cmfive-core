@@ -275,7 +275,7 @@ class User extends DbObject
      */
     public function updateLastLogin()
     {
-        $data = ["dt_lastlogin" => $this->time2Dt(time())];
+        $data = ["dt_lastlogin" => $this->time2Dt(new DateTime("now"))];
         $this->_db->update("user", $data)->where("id", $this->id)->execute();
     }
 

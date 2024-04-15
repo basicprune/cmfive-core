@@ -416,12 +416,10 @@ function getTimeSelect($start = 8, $end = 19)
 }
 
 /**
- * Formats a date in the given format
- * Can take either unix timestamp or string date
+ * Formats a dt_, d_, t_ property with the given Format, 
+ * Aswell as the given timezone
  *
  * @param mixed $date
- * @param string format (optional, default "d/m/Y")
- * @return string|false
  */
 function formatDate($date, $format = "d/m/Y", $timezone = null)
 {

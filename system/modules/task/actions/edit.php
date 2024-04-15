@@ -84,6 +84,7 @@ function edit_GET($w)
             ],
             [
                 ["Priority", "select", "priority", $task->priority, $priority],
+                // This is how dt_ properties should be formated for dispaly, setting the timezone to usertimezone and formatting to ("d/m/Y") 
                 ["Date Due", "date", "dt_due", !empty($p["id"]) ? $task->dt_due->setTimezone(new DateTimeZone($_SESSION['usertimezone']))->format("d/m/Y") : ""], 
                 (new Select([
                     "id|name" => "assignee_id",

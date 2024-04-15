@@ -665,8 +665,7 @@ class DbObject extends DbService
 
                    //$this->dt_created = time();
 
-                    $dt = new DateTime("now", new DateTimeZone("utc"));
-                    $this->dt_created = $dt;
+                    $this->dt_created = new DateTime("now", new DateTimeZone("utc"));
                 }
 
                 if (in_array("creator_id", $columns) && AuthService::getInstance($this->w)->loggedIn() && !isset($this->creator_id)) {
@@ -677,8 +676,7 @@ class DbObject extends DbService
 
                    // $this->dt_modified = time();
 
-                    $dt = new DateTime("now", new DateTimeZone("utc"));
-                    $this->dt_modified = $dt;
+                    $this->dt_modified = new DateTime("now", new DateTimeZone("utc"));
                 }
 
                 if (in_array("modifier_id", $columns) && AuthService::getInstance($this->w)->loggedIn() && !isset($this->modifier_id)) {
@@ -1065,6 +1063,7 @@ class DbObject extends DbService
                 if ($k == "id") {
                     $str .= "id" . $v . " ";
                 } else {
+                    // updateConvert changes dt_,d_,t_ to formatted string
                     $str .= $this->updateConvert($k, $v) . " ";
                    // $str .= $v . " ";
                 }

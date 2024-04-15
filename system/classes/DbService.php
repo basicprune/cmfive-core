@@ -87,11 +87,6 @@ class DbService
         return formatDate($time ? $time : time(), $format, false);
     }
 
-    public function fixTime($v){
-      
-       return new DateTime($v, new DateTimeZone("utc"));
-    }
-
     /**
      * Formats a timestamp
      * per default MySQL date format is used
@@ -114,9 +109,16 @@ class DbService
         return strtotime(str_replace("/", "-", $dt));
     }
 
-    public function string2Dt($dt_string)
+    /**
+     * Formats string to DateTime Object, 
+     * can parse a timezone string
+     * 
+     * @param $dt_string
+     * @param $timezone = "utc"
+     */
+    public function string2Dt($dt_string, $timezone = "utc")
     {
-        return new Datetime($dt_string, new DateTimeZone('utc'));
+        return new Datetime($dt_string, new DateTimeZone($timezone));
     }
 
     public function d2Time($d)
@@ -381,8 +383,8 @@ class DbService
             if (strpos($k, "dt_") === 0 || strpos($k, "d_") === 0 || strpos($k, "t_") === 0) 
             {
                 if (!empty($v) && !$v instanceof Datetime) {
-                    // convert string to DateTime, Assume string is in 'utc'
-                     $o->$k = new DateTime($v, new DateTimeZone('utc'));
+                    // convert string to DateTime, all dates from the db are in utc by default
+                    $o->$k = new DateTime($v, new DateTimeZone('utc'));
                 }
             }
            

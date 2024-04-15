@@ -80,9 +80,8 @@ class AspectSearchable {
 			if (empty($index)) {
 				$this->insert($ignoreAdditional);
 			} else {
-				$dt_Object = new DateTime("now", new DateTimeZone("utc"));
 				
-				$this->_index->dt_modified = $dt_Object->format("Y-m-d H:i:s");
+				$this->_index->dt_modified = new DateTime("now", new DateTimeZone("utc"));
 				$this->_index->modifier_id = (AuthService::getInstance($this->_index->w)->loggedIn() ? AuthService::getInstance($this->_index->w)->user()->id : 0);
 				
 				$this->_index->content = $this->object->getIndexContent($ignoreAdditional);

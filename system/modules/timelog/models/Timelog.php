@@ -106,10 +106,21 @@ class Timelog extends DbObject
         return '';
     }
 
+        /**
+     * intervalToSeconds
+     *
+     * @param  DateInterval $interval
+     * @return int
+     */
+    function intervalToSeconds(\DateInterval $interval) {
+        return $interval->days * 86400 + $interval->h * 3600 + $interval->i * 60 + $interval->s;
+    }
+
     public function getDuration()
     {
         if (!empty($this->dt_start) && !empty($this->dt_end)) {
-            return ($this->dt_end->diff($this->dt_start));
+            $myDiff = $this->dt_end->diff($this->dt_start);
+            return $this->intervalToSeconds($myDiff);
         }
     }
 
