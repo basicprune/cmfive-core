@@ -416,10 +416,15 @@ function getTimeSelect($start = 8, $end = 19)
 }
 
 /**
- * Formats a dt_, d_, t_ property with the given Format, 
- * Aswell as the given timezone
- *
+ * Formats a dt_, d_, t_ property with the given format, 
+ * Aswell as the given timezone. 
+ * 
+ * Returns a formatted Date string.
+ * 
+ * (Does not effect the original DateTime objects timezone)
  * @param mixed $date
+ * @param mixed $format
+ * @param mixed $timezone if timezone is left empty it will inherit the timezone
  */
 function formatDate($date, $format = "d/m/Y", $timezone = null)
 {
