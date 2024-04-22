@@ -235,9 +235,10 @@ class DbService
         // Automatically converts keys with different database values
         $parts = [];
         foreach ($object->getDbTableColumnNames() as $k) {
+            // THIS IS THE MAIN CHANGE TO AVOID USING TIMESTAMPS
             // if (0 === strpos($k, 'dt_') || 0 === strpos($k, 'd_')) {
             //     // This is MySQL specific!
-            //     $parts[] = "TIMESTAMP($table.`" . $object->getDbColumnName($k) . "`) AS `$k`";
+            //     $parts[] = "UNIX_TIMESTAMP($table.`" . $object->getDbColumnName($k) . "`) AS `$k`";
 
 
             // } else
