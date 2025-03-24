@@ -4,14 +4,14 @@ import { HOST, CmfiveHelper } from "@utils/cmfive";
 export class AdminHelper {
     static async createUser(page: Page, username: string, password: string, firstname: string, lastname: string, email: string, permissions: string[] = [])
     {
-        await page.waitForTimeout(100); // let page load so next line doesn't fail if previous function ended on a redirect to user list
+        await page.waitForLoadState(); // let page load so next line doesn't fail if previous function ended on a redirect to user list
         if(page.url() != HOST + "/admin/users#internal")
             await CmfiveHelper.clickCmfiveNavbar(page, "Admin", "List Users");
         await page.waitForURL(HOST + "/admin/users#internal");
 
         await page.getByRole("button", {name: "Add New User"}).click();
 
-        await page.waitForSelector("#cmfive-modal", {state: "visible"});
+        await page.locator("#cmfive-modal").waitFor({state: "visible"});
 
         await page.locator("#is_active").check();
         await page.locator("#login").fill(username);
@@ -29,7 +29,7 @@ export class AdminHelper {
         if(permissions.length == 0)
             permissions.push("user");
         
-        for(let permission of permissions)
+        for(const permission of permissions)
             await page.locator("#check_"+permission).check();
 
         await page.getByRole("button", { name: "Save" }).click();
@@ -38,7 +38,7 @@ export class AdminHelper {
 
     static async deleteUser(page: Page, username: string)
     {
-        await page.waitForTimeout(100); // let page load so next line doesn't fail if previous function ended on a redirect to user list
+        await page.waitForLoadState(); // let page load so next line doesn't fail if previous function ended on a redirect to user list
         if(page.url() != HOST + "/admin/users#internal")
             await CmfiveHelper.clickCmfiveNavbar(page, "Admin", "List Users");
         await page.waitForURL(HOST + "/admin/users#internal");
@@ -49,15 +49,17 @@ export class AdminHelper {
         await expect(page.getByText("User " + username + " deleted.")).toBeVisible();
     }
 
-    static async editUser(page: Page, username: string, data: [string, string][]) {
-        await page.waitForTimeout(100); // let page load so next line doesn't fail if previous function ended on a redirect to user list
+    static async editUser(page: Page, isMobile: boolean, username: string, data: [string, string][]) {
+        await page.waitForLoadState(); // let page load so next line doesn't fail if previous function ended on a redirect to user list
         if(page.url() != HOST + "/admin/users#internal")
             await CmfiveHelper.clickCmfiveNavbar(page, "Admin", "List Users");
         await page.waitForURL(HOST + "/admin/users#internal");
 
         await CmfiveHelper.getRowByText(page, username).getByRole("button", { name: "Edit" }).click();
 
-        for (let [label, value] of data) {
+		await page.locator("#details").waitFor()
+
+        for (const [label, value] of data) {
             if (label == "Title") {
                 await page.getByLabel(label, { exact: true }).selectOption(value);
             }
@@ -79,39 +81,65 @@ export class AdminHelper {
         await expect(page.getByText("User details updated")).toBeVisible();
     }
 
-    static async createLookupType(page: Page, type: string, code: string, lookup: string)
+    static async changeUserPassword(page: Page, isMobile: boolean, username: string, password: string)
     {
-        if(page.url() != HOST + "/admin/lookup#tab-1")
-            await CmfiveHelper.clickCmfiveNavbar(page, "Admin", "Lookup");
-
-        await page.getByRole("link", {name: "New Item", exact: true}).click();
-
-        const type_dropdown = await page.locator("#type option", {hasText: type}).count();
-        if (type_dropdown == 0) {
-            await page.getByLabel("or Add New Type").fill(type);
-        } else {
-            await page.getByRole("combobox").selectOption(type);
+        await page.waitForTimeout(100); // let page load so next line doesn't fail if previous function ended on a redirect to user list
+        if (page.url() != HOST + "/admin/users#internal") {
+            await CmfiveHelper.clickCmfiveNavbar(page, isMobile, "Admin", "List Users");
         }
-        await page.getByLabel("Code").fill(code);
-        await page.getByLabel("Title", { exact: true }).fill(lookup);
-        await page.getByRole("button", {name: "Save"}).click();
+        await page.waitForURL(HOST + "/admin/users#internal");
+
+        if (isMobile) {
+            await page.click(`ul:has(li:has(span:text("${username}"))) button:text("Edit")`);
+        } else {
+            await CmfiveHelper.getRowByText(page, username).getByRole("button", {name: "Edit"}).click();
+        }
+
+        await page.locator("a", {hasText: "Security"}).click();
+        await page.locator("input[name='password']").fill(password);
+        await page.locator("input[name='repeat_password']").fill(password);
+        await page.locator(".btn", {hasText: "Update Password"}).click();
+
+        await page.waitForSelector(".cmfive-toast-message", {state: "visible"});
+        await expect(page.getByText("User password updated")).toBeVisible();
+    }
+
+    static async createLookupType(page: Page, isMobile: boolean, type: string, code: string, lookup: string)
+    {
+        if(page.url() != HOST + "/admin-lookups#dynamic")
+            await CmfiveHelper.clickCmfiveNavbar(page, isMobile, "Admin", "Lookups");
+
+		await page.getByText("Create Lookup").click();
+
+		await page.locator("#cmfive-modal").waitFor({ state: "visible" });
+        const modal = page.locator("#cmfive-modal");
+
+		await modal.getByLabel("or Add New Type", { exact: true }).fill(type);
+
+		await modal.getByLabel("Code").fill(code);
+		await modal.getByLabel("Title",).fill(lookup);
+        await modal.getByRole("button", {name: "Create"}).click();
 
         await expect(page.getByText("Lookup Item added")).toBeVisible();
     }
 
     static async createLookup(page: Page, type: string, code: string, lookup: string)
     {
-        if(page.url() != HOST + "/admin/lookup#tab-1")
-            await CmfiveHelper.clickCmfiveNavbar(page, "Admin", "Lookup");
-            
-        await page.getByRole("link", { name: "New Item", exact: true }).click();
+        if(page.url() != HOST + "/admin-lookups#dynamic")
+            await CmfiveHelper.clickCmfiveNavbar(page, isMobile, "Admin", "Lookups");
 
-        await page.getByRole("combobox").selectOption(type);
-        await page.getByLabel("Code").fill(code);
-        await page.getByLabel("Title", { exact: true }).fill(lookup);
+		await page.getByText("Create Lookup").click();
 
-        await page.getByRole("button", {name: "Save"}).click();
-        await expect(page.getByText("Lookup Item added")).toBeVisible();
+        await page.locator("#cmfive-modal").waitFor({ state: "visible" });
+        const modal = page.locator("#cmfive-modal");
+
+		await modal.locator('#type').selectOption(type);
+
+		await modal.getByLabel("Code").fill(code);
+		await modal.getByLabel("Title").fill(lookup);
+        await modal.getByRole("button", {name: "Create"}).click();
+
+        await expect(page.getByText("Lookup Item created")).toBeVisible();
     }
 
     static async deleteLookup(page: Page, lookup: string)
@@ -124,11 +152,16 @@ export class AdminHelper {
 
     static async editLookup(page: Page, lookup: string, data: Record<string, string>)
     {
-        if(page.url() != HOST + "/admin/lookup#tab-1")
-            await CmfiveHelper.clickCmfiveNavbar(page, "Admin", "Lookup");
-        
-        await CmfiveHelper.getRowByText(page, lookup).getByRole("button", {name: "Edit"}).click();
-        await page.waitForSelector("#cmfive-modal", { state: "visible" });
+        if(page.url() != HOST + "/admin-lookups#dynamic")
+            await CmfiveHelper.clickCmfiveNavbar(page, isMobile, "Admin", "Lookups");
+
+		// TODO: mobile isn't actually implemented for new lookups page
+        // if(isMobile)
+        //     await page.click(`ul:has(li:has(span:text("${lookup}"))) button:text("Edit")`);
+        // else
+		await page.getByRole('row', { name: lookup }).locator('a').click();
+
+        await page.locator("#cmfive-modal").waitFor({ state: "visible" });
         const modal = page.locator("#cmfive-modal");
 
         if(data["Type"] != undefined)
@@ -154,7 +187,7 @@ export class AdminHelper {
             await CmfiveHelper.clickCmfiveNavbar(page, "Admin", "List Groups");
         
         await page.getByRole("button", {name: "New Group"}).click();
-        await page.waitForSelector("#cmfive-modal", {state: "visible"});
+        await page.locator("#cmfive-modal").waitFor({state: "visible"});
 
         await page.locator("#title").fill(usergroup);
         await page.getByRole("button", {name: "Save"}).click();
@@ -185,7 +218,7 @@ export class AdminHelper {
         }
 
         await page.getByRole("button", {name: "New Member"}).click();
-        await page.waitForSelector("#cmfive-modal", {state: "visible"});
+        await page.locator("#cmfive-modal").waitFor({state: "visible"});
 
         await page.locator("#member_id").selectOption(user);
 
@@ -224,7 +257,7 @@ export class AdminHelper {
 
         await page.getByRole("button", {name: "Edit Permissions"}).click();
 
-        for(let permission of permissions)
+        for(const permission of permissions)
             await page.locator("#check_"+permission).check();
 
         await page.getByRole("button", {name: "Save"}).click();
@@ -256,7 +289,7 @@ export class AdminHelper {
         // typing <table> puts cursor on new line between <table> and </table>
         // typing <tr>/<td> writes </tr>/</td> respectively on the same line, cursor before the closing tag
 
-        for(let line of code) {
+        for(const line of code) {
             if(line.indexOf("</") != -1) {    
                 await page.keyboard.type(line.split("</")[0]);
 
@@ -293,5 +326,25 @@ export class AdminHelper {
         await tabs[1].waitForLoadState("load");
 
         return tabs[1];
+    }
+
+    static async installDatabaseSeeds(page: Page, isMobile: boolean, module: string){
+        //installs databse seeds if not installed
+        await CmfiveHelper.clickCmfiveNavbar(page, isMobile, "Admin", "Migrations");
+        await page.getByRole('link', {name: 'Database Seeds'}).click();
+        const moduleTab = page.locator(`#${module}-tab-seed`);
+
+        //collect number of buttons
+        await moduleTab.click()
+        const installButtons = page.getByRole('button', {name: 'Install'});
+        const installButtonsCount = await installButtons.count();
+
+        //loop for number of buttons aka how many seeds to install
+        for (let i = 0; i < installButtonsCount; i++) {
+            await moduleTab.click()
+            //each time you click the button it takes one locator result off the page
+            await installButtons.first().click(); //this always resolves the first button
+            await page.locator('div.alert-success').waitFor({state: 'visible'});
+        }
     }
 }

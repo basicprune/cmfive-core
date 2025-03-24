@@ -12,8 +12,7 @@ function groups_GET(Web &$w)
 
 	AdminService::getInstance($w)->navigation($w, "Groups");
 
-	$table = array(array("Title", "Parent Groups", "Actions"));
-	$table = array(array("Title", "Parent Groups", "Operations", "sort_key" => null));
+    $table = [["Title", "Parent Groups", "Operations"]];
 
 	$groups = AuthService::getInstance($w)->getGroups();
 
@@ -35,19 +34,16 @@ function groups_GET(Web &$w)
 			}
 			$line[] = count($ancestors) > 0 ? "<div style=\"color:green;\">" . implode(", ", $ancestors) . "</div>" : "";
 
-			$buttonGroup = HtmlBootstrap5::b("/admin/moreInfo/" . $group->id, "Edit", null, "editbutton", false, 'btn-sm btn-secondary');
-			if (AuthService::getInstance($w)->user()->is_admin) {
-				$buttonGroup .= HtmlBootstrap5::b("/admin/groupdelete/" . $group->id, "Delete", "Are you sure you want to delete this group?", "deletebutton", false, "btn-sm btn-danger");
-			}
-			$operations = HtmlBootstrap5::buttonGroup($buttonGroup);
+            $operations = HtmlBootstrap5::b("/admin/moreInfo/" . $group->id, "Edit", null, null, false, "btn btn-sm btn-primary");
 
-			$line[] = $operations;
+            if (AuthService::getInstance($w)->user()->is_admin) {
+                $operations .= HtmlBootstrap5::b("/admin/groupdelete/" . $group->id, "Delete", "Are you sure you want to delete this group?", null, false, "btn btn-sm btn-danger");
+            }
 
-			$line["sort_key"] = strtoupper($group->login);
-
-			$table[] = $line;
-		}
-	}
+            $line[] = HtmlBootstrap5::buttonGroup($operations);
+            $table[] = $line;
+        }
+    }
 
 	if (AuthService::getInstance($w)->user()->is_admin) {
 		//$w->out(HtmlBootstrap5::box("/admin/groupadd", "New Group", true, false, null, null, 'isbox', null, 'btn btn-sm btn-primary'));

@@ -272,6 +272,22 @@ class Attachment extends DbObject
     }
 
     /**
+     * Get the bootstrap5 icon class associated with the mime-type of this attachment
+     * Useful for fallback icons, for example for pdf and video files where there is no getThumbnailUrl()
+     * @return string Bootstrap5 Icon class name
+     */
+    public function getBootstrap5IconClass(): string
+    {
+        if ($this->isDocument()) {
+            return "bi-filetype-doc";
+        }
+
+        // return bi-filetype-doc here as a fallback
+        $exploded = explode(".", $this->filename); // must create new variable here as end() requires ref
+        return "bi-filetype-doc bi-filetype-" . end($exploded);
+    }
+
+    /**
      * Returns Gaufrette File instance (of the attached file)
      *
      * @return FilePolyfill

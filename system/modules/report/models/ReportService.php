@@ -360,7 +360,7 @@ class ReportService extends DbService
         }
 
         if ($table != "") {
-            $fields = $this->_db->sql("show columns in " . $this->_db->quote($table))->fetchAll();
+            $fields = $this->_db->sql("show columns in " . $table)->fetchAll();
 
             if ($fields) {
                 $output = "<table><tr><td><b>Field</b></td><td><b>Type</b></td></tr>";
@@ -663,5 +663,21 @@ class ReportService extends DbService
 
         $w->ctx("navigation", $nav);
         return $nav;
+    }
+
+    public function navList(): array
+    {
+        $list = [
+            new MenuLinkStruct("Report Dashboard", "report/index")
+        ];
+        if (AuthService::getInstance($this->w)->user()->hasAnyRole(["report_editor", "report_admin"])) {
+            $list = [
+                ...$list,
+                new MenuLinkStruct("Create a Report", "report/edit"),
+                new MenuLinkStruct("Connections", "report-connections"),
+                new MenuLinkStruct("Feeds Dashboard", "report/listfeed"),
+            ];
+        }
+        return $list;
     }
 }

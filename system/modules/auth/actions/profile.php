@@ -2,8 +2,21 @@
 
 function profile_GET(Web &$w)
 {
-    VueComponentRegister::registerComponent("autocomplete", new VueComponent("autocomplete", "/system/templates/vue-components/form/elements/autocomplete.vue.js", "/system/templates/vue-components/form/elements/autocomplete.vue.css"));
-    VueComponentRegister::registerComponent("profile-security", new VueComponent("profile-security", "/system/templates/vue-components/profile-security.vue.js"));
+    CmfiveScriptComponentRegister::registerComponent(
+        "UserEditComponent",
+        new CmfiveScriptComponent(
+            "/system/templates/base/dist/UserSecurity.js",
+            ["weight" => "200", "type" => "module"]
+        )
+    );
+
+    CmfiveScriptComponentRegister::registerComponent(
+        "AuthProfileForm",
+        new CmfiveScriptComponent(
+            "/system/templates/base/dist/AuthProfileForm.js",
+            ["weight" => "200", "type" => "module"]
+        )
+    );
 
     $user = AuthService::getInstance($w)->user();
     if (empty($user)) {
@@ -39,6 +52,7 @@ function profile_GET(Web &$w)
             "priv_mobile" => $contact->priv_mobile,
             "fax" => $contact->fax,
             "email" => $contact->email,
+            "language" => $user->language,
         ],
         "security" => [
             "new_password" => "",

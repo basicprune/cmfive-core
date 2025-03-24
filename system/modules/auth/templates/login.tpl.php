@@ -1,123 +1,144 @@
-<div v-cloak id="app">
-    <div v-if="is_mfa_enabled">
-        <form @submit.prevent="executeLogin">
-            <?php
-            echo (new \Html\Form\InputField\Hidden([
-                "name" => CSRF::getTokenID(),
-                "value" => CSRF::getTokenValue(),
-            ])) .
-            (new \Html\Form\InputField\Hidden([
-                "name" => "login",
-            ]))->setAttribute("v-model", "login") .
-            (new \Html\Form\InputField\Hidden([
-                "name" => "password",
-            ]))->setAttribute("v-model", "password");
-            ?>
-            <label>MFA Code
-                <?php
-                echo (new \Html\Form\InputField([
-                    "id|name" => "mfa_code",
-                    "placeholder" => "Your code",
-                    "required" => true,
-                ]))->setAttribute("v-model", "mfa_code");
-                ?>
-            </label>
-            <button type="submit" class="button medium-5 small-12">Confirm</button>
-            <button class="button info medium-5 small-12 right" @click.prevent="back">Back</button>
-        </form>
+<form id="auth_form">
+    <?php
+    echo (new \Html\Form\InputField\Hidden([
+        "name" => CSRF::getTokenID(),
+        "value" => CSRF::getTokenValue(),
+    ]));
+    ?>
+
+    <div
+        id="errors"
+        data-alert
+        class="alert
+        alert-warning
+        fade
+        show
+        row
+        d-none
+        justify-content-between"
+        role='alert'>
     </div>
-    <div v-else>
-        <form @submit.prevent="executeLogin">
-            <div data-alert class="alert-box alert" v-if="error_message != null">
-                {{ error_message }}
-                <a href="#" class="close" @click="error_message = null">&times;</a>
+
+    <div id="login_form">
+        <label for="login" class="col-form-label">
+            <?php echo Config::get('auth.login_label', 'Login'); ?>
+        </label>
+        <?php
+        echo (new \Html\Form\InputField([
+            "id|name" => "login",
+            "placeholder" => Config::get('auth.login_label', 'Login'),
+            "required" => true,
+            "class" => "form-control-lg form-control",
+        ]));
+        ?>
+
+        <label for="login" class="col-form-label">
+            Password
+        </label>
+        <?php
+        echo (new \Html\Form\InputField([
+            "id|name" => "password",
+            "placeholder" => "Your password",
+            "required" => true,
+            "class" => "form-control-lg form-control",
+            "type" => "password"
+        ]));
+        ?>
+
+        <div class='row d-flex justify-content-between mt-3 row-cols-1 row-cols-sm-2'>
+            <div class='col'>
+                <button type="submit" class="btn btn-primary w-100 h-auto">Login</button>
             </div>
+            <div class='col text-center text-sm-end'>
+                <a onclick="window.location.href='/auth/forgotpassword';" class="btn w-auto "><?php echo $passwordHelp; ?></a>
+            </div>
+        </div>
+    </div>
+
+    <div id="mfa_form" class="d-none">
+        <label for='mfa_code' class='col-form-label'>MFA Code
             <?php
-            echo (new \Html\Form\InputField\Hidden([
-                "name" => CSRF::getTokenID(),
-                "value" => CSRF::getTokenValue(),
+            echo (new \Html\Form\InputField([
+                "id|name" => "mfa_code",
+                "placeholder" => "Your code",
+                "class" => "form-control-lg form-control",
             ]));
             ?>
-            <label><?php echo Config::get('auth.login_label', 'Login'); ?>
-                <?php
-                echo (new \Html\Form\InputField([
-                    "id|name" => "login",
-                    "placeholder" => Config::get('auth.login_label', 'Login'),
-                    "required" => true,
-                ]))->setAttribute("v-model", "login");
-                ?>
-            </label>
-            <label>Password
-                <?php
-                echo (new \Html\Form\InputField\Password([
-                    "id|name" => "password",
-                    "placeholder" => "Your password",
-                    "required" => true,
-                ]))->setAttribute("v-model", "password");
-                ?>
-            </label>
-            <button type="submit" class="button medium-5 small-12">Login</button>
-            <a onclick="window.location.href='/auth/forgotpassword';" class="medium-5 small-12 right text-right"><?php echo $passwordHelp; ?></a>
-        </form>
+        </label>
+
+        <div class='row d-flex justify-content-between mt-3 row-cols-1 row-cols-sm-2'>
+            <div class='col'>
+                <button type="submit" class="btn btn-primary w-100">Confirm</button>
+            </div>
+            <div class='col mt-3 mt-sm-0'>
+                <button class="btn btn-secondary w-100" onclick="back">Back</button>
+            </div>
+        </div>
     </div>
-</div>
+</form>
+
 <script>
-    var app = new Vue({
-        el: "#app",
-        data: function() {
-            return {
-                login: null,
-                password: null,
-                mfa_code: null,
-                error_message: null,
-                is_mfa_enabled: false,
-                is_loading: false,
-            }
-        },
-        methods: {
-            executeLogin: function() {
-                var _this = this;
+    const mfa_form = document.getElementById("mfa_form");
+    const login_form = document.getElementById("login_form");
+    const auth_form = document.getElementById("auth_form");
+    const errors = document.getElementById("errors");
 
-                if (_this.is_loading) {
-                    return;
-                }
+    const executeLogin = async (e) => {
+        e.preventDefault();
 
-                _this.is_loading = true;
+        errors.classList.add("d-none");
+        errors.classList.remove("d-flex");
 
-                axios.post("/auth/login", {
+        const formdata = new FormData(auth_form);
+
+        let res;
+        try {
+            res = await fetch("/auth/login", {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json"
+                },
+                body: JSON.stringify({
                     "<?php echo CSRF::getTokenID(); ?>": "<?php echo CSRF::getTokenValue(); ?>",
-                    login: _this.login,
-                    password: _this.password,
-                    mfa_code: _this.mfa_code,
-                    // this detects users system timezone
-                    usertimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-                   
-                }).then(function(response) {
-                    if (response.data.redirect_url != null) {
-                        window.location.href = response.data.redirect_url;
-                        return;
-                    }
-
-                    _this.is_mfa_enabled = response.data.is_mfa_enabled;
-                    if (_this.is_mfa_enabled) {
-                        _this.$nextTick(function() {
-                            document.getElementById("mfa_code").focus();
-                        });
-                    }
-                }).catch(function(error) {
-                    _this.login = null,
-                    _this.password = null,
-                    _this.mfa_code = null,
-                    _this.is_mfa_enabled = false;
-                    _this.error_message = error.response.data;
-                }).finally(function() {
-                    _this.is_loading = false;
-                });
-            },
-            back: function() {
-                this.is_mfa_enabled = false;
-                this.mfa_code = null;
-            }
+                    "login": formdata.get("login"),
+                    "password": formdata.get("password"),
+                    "mfa_code": formdata.get("mfa_code"),
+                })
+            });
+        } catch (e) {
+            auth_form.reset();
+            errors.innerText = e.message;
+            errors.classList.remove("d-none");
+            errors.classList.add("d-flex");
         }
-    })
+
+        const json = await res.json();
+
+        if (json.data.redirect_url != null)
+            return window.location.href = json.data.redirect_url;
+
+        if (json.data.is_mfa_enabled) {
+            mfa_form.classList.remove("d-none");
+            login_form.classList.add("d-none");
+
+            const code_input = document.getElementById("mfa_code");
+            code_input.setAttribute("required", "required");
+            code_input.focus();
+            return;
+        }
+
+        if (json.status == 500) {
+            auth_form.reset();
+            errors.innerText = json.message ?? res.statusText;
+            errors.classList.remove("d-none");
+            errors.classList.add("d-flex");
+        }
+    }
+
+    const back = () => {
+        mfa_form.classList.add("d-none");
+        login_form.classList.remove("d-none");
+    }
+
+    auth_form.addEventListener("submit", executeLogin);
 </script>

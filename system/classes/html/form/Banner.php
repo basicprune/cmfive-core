@@ -20,7 +20,9 @@ class Banner extends \Html\Form\FormElement
     public $required;
     public $value;
 
-    static $_excludeFromOutput = ["value", "label"];
+    public $type = "warning";
+
+    static $_excludeFromOutput = ["value"];
 
     /**
     * Returns built string of Banner field
@@ -29,7 +31,7 @@ class Banner extends \Html\Form\FormElement
     */
     public function __toString()
     {
-        $buffer = ' <div class="alert alert-warning" role="alert" ';
+        $buffer = '<div class="alert alert-' . $this->type . '" role="alert" ';
 
         foreach (get_object_vars($this) as $field => $value) {
             if (!is_null($value) && !is_array($this->{$field}) && !in_array($field, static::$_excludeFromOutput)) {
@@ -93,6 +95,13 @@ class Banner extends \Html\Form\FormElement
     public function setValue($value)
     {
         $this->value = $value;
+
+        return $this;
+    }
+
+    public function setType($type)
+    {
+        $this->type = $type;
 
         return $this;
     }

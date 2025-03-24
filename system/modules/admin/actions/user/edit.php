@@ -9,6 +9,14 @@ function edit_GET(Web $w)
 
     VueComponentRegister::registerComponent("autocomplete", new VueComponent("autocomplete", "/system/templates/vue-components/form/elements/autocomplete.vue.js", "/system/templates/vue-components/form/elements/autocomplete.vue.css"));
 
+    CmfiveScriptComponentRegister::registerComponent(
+        "UserEditComponent",
+        new CmfiveScriptComponent(
+            "/system/templates/base/dist/UserSecurity.js",
+            ["weight" => "200", "type" => "module"]
+        )
+    );
+
     $redirect_url = "/admin/users";
 
     list($user_id) = $w->pathMatch("id");
@@ -63,7 +71,7 @@ function edit_GET(Web $w)
             "is_locked" => $user->is_locked,
             "new_password" => "",
             "repeat_new_password" => "",
-            "is_mfa_enabled" => $user->is_mfa_enabled,
+            "is_mfa_enabled" => $user->is_mfa_enabled ? 'true' : 'false',
         ],
         "groups" => $groups,
     ];
@@ -83,17 +91,17 @@ function edit_GET(Web $w)
                     "id|name" => "admin",
                     'label' => 'Admin',
                     "class" => "",
-                ]))->setAttribute("v-model", "user.security.is_admin"),
+                ]))->setChecked($user->is_admin),
                 (new \Html\Form\InputField\Checkbox([
                     "id|name" => "active",
                     'label' => 'Active',
                     "class" => "",
-                ]))->setAttribute("v-model", "user.security.is_active"),
+                ]))->setChecked($user->is_active),
                 (new \Html\Form\InputField\Checkbox([
                     "id|name" => "external",
                     'label' => 'External',
                     "class" => "",
-                ]))->setAttribute("v-model", "user.security.is_external"),
+                ]))->setChecked($user->is_external),
                 (new Select([
                     "id|name" => "language",
                     'label' => 'Language',
@@ -108,12 +116,14 @@ function edit_GET(Web $w)
                     "id|name" => "firstname",
                     'label' => 'First Name',
                     'required' => true,
-                ]))->setAttribute("v-model", "user.account.firstname"),
+                    "value" => $user_details["account"]["firstname"],
+                ])),
                 (new \Html\Form\InputField([
                     "id|name" => "lastname",
                     'label' => 'Last Name',
                     'required' => true,
-                ]))->setAttribute("v-model", "user.account.lastname"),
+                    "value" => $user_details["account"]["lastname"],
+                ])),
             ],
             [
                 (new SelectWithOther([
@@ -129,35 +139,42 @@ function edit_GET(Web $w)
                 (new \Html\Form\InputField([
                     "id|name" => "othername",
                     'label' => 'Other Name',
-                ]))->setAttribute("v-model", "user.account.othername")
+                    "value" => $user_details["account"]["othername"],
+                ]))
             ],
             [
                 (new \Html\Form\InputField\Tel([
                     "id|name" => "homephone",
                     'label' => 'Home Phone',
-                ]))->setAttribute("v-model", "user.account.homephone"),
+                    "value" => $user_details["account"]["homephone"],
+                ])),
                 (new \Html\Form\InputField\Tel([
                     "id|name" => "workphone",
                     'label' => 'Work Phone',
-                ]))->setAttribute("v-model", "user.account.workphone"),
+                    "value" => $user_details["account"]["workphone"],
+                ])),
                 (new \Html\Form\InputField\Tel([
                     "id|name" => "mobile",
                     'label' => 'Mobile',
-                ]))->setAttribute("v-model", "user.account.mobile"),
+                    "value" => $user_details["account"]["mobile"],
+                ])),
             ],
             [
                 (new \Html\Form\InputField\Tel([
                     "id|name" => "priv_mobile",
                     'label' => 'Private Mobile',
-                ]))->setAttribute("v-model", "user.account.priv_mobile"),
+                    "value" => $user_details["account"]["priv_mobile"],
+                ])),
                 (new \Html\Form\InputField([
                     "id|name" => "fax",
                     'label' => 'Fax',
-                ]))->setAttribute("v-model", "user.account.fax"),
+                    "value" => $user_details["account"]["fax"],
+                ])),
                 (new \Html\Form\InputField\Email([
                     "id|name" => "email",
                     'label' => 'Email',
-                ]))->setAttribute("v-model", "user.account.email")
+                    "value" => $user_details["account"]["email"],
+                ])),
             ]
         ],
     ], '/admin-user/edit/' . $user->id));
@@ -179,9 +196,36 @@ function edit_POST(Web $w): void
     }
 
     $user->fill($_POST);
-    $user->is_admin = !empty($_POST['admin']) ? $_POST['admin'] : 0;
-    $user->is_active = !empty($_POST['active']) ? $_POST['active'] : 0;
-    $user->is_external = isset($_POST['external']) ? 1 : 0;
+
+    if (!empty($_POST["admin"])) {
+        if ($_POST["admin"] === "on" || $_POST["admin"] === "off") {
+            $user->is_admin = $_POST["admin"] === "on";
+        } else {
+            $user->is_admin = $_POST["admin"];  // backwards compat
+        }
+    } else {
+        $user->is_admin = 0;
+    }
+
+    if (!empty($_POST["active"])) {
+        if ($_POST["active"] === "on" || $_POST["active"] === "off") {
+            $user->is_active = $_POST["active"] === "on";
+        } else {
+            $user->is_active = $_POST["active"];  // backwards compat
+        }
+    } else {
+        $user->is_active = 0;
+    }
+
+    if (!empty($_POST["external"])) {
+        if ($_POST["external"] === "on" || $_POST["external"] === "off") {
+            $user->is_external = $_POST["external"] === "on";
+        } else {
+            $user->is_external = $_POST["external"];  // backwards compat
+        }
+    } else {
+        $user->is_external = 0;
+    }
 
     if (!$user->insertOrUpdate()) {
         $w->error("Failed to update User details", $redirect_url);
