@@ -227,7 +227,7 @@ function edit_GET($w)
             ]
         ];
 
-        $w->ctx("tasknotify", Html::multiColForm($form, $w->localUrl("/task/updateusertasknotify/" . $task->id), "POST"));
+        $w->ctx("tasknotify", HtmlBootstrap5::multiColForm($form, $w->localUrl("/task/updateusertasknotify/" . $task->id), "POST"));
     }
 
     ///////////////////
@@ -267,11 +267,7 @@ function edit_POST($w)
     }else { 
         $task->dt_due = DateTime::createFromFormat("d/m/Y", $_POST['edit']['dt_due'], new DateTimeZone($_SESSION['usertimezone']));
     }
-
-     
-
-
-    $task->estimate_hours = !empty($task->estimate_hours) ? $task->estimate_hours : null;
+    $task->estimate_hours = !empty($task->estimate_hours) ? intval($task->estimate_hours) : null;
     $task->effort = !empty($task->effort) ? floatval($task->effort) : null;
     $task->rate = !empty($task->rate) ? $task->rate : null;
     $task->insertOrUpdate(true);

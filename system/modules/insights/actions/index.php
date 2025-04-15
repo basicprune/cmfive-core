@@ -39,14 +39,20 @@ function index_ALL(Web $w)
                     if ($userHasAccess) {
                         $row = [];
                         // add values to the row in the same order as the table headers
-                        $row[] = HtmlBootstrap5::a('/insights/viewInsight/' . Get_class($insight), $insight->name);
-                        $row[] = $modulename;
-                        $row[] = $insight->description;
+                        $row = [
+                            HtmlBootstrap5::a('/insights/viewInsight/' . $insight_class, $insight->name),
+                            $modulename,
+                            $insight->description
+                        ];
+
                         // the actions column is used to hold buttons that link to actions per insight. Note the insight id is added to the href on these buttons.
-                        $actions = [];
-                        $button_group = HtmlBootstrap5::b("/insights/viewInsight/" . Get_class($insight), "View", null, "viewbutton", false, 'btn-sm btn-primary');
-                        if (InsightService::getInstance($w)->isInsightOwner($user_id, get_class($insight))) {
-                            $button_group .= HtmlBootstrap5::b("/insights/manageMembers?insight_class=" . Get_class($insight), "Manage Members", null, " viewbutton", false, "btn-sm btn-secondary");
+                        $button_group = HtmlBootstrap5::b(href: '/insights/viewInsight/' . $insight_class, title: 'View', class: 'btn btn-primary');
+                        if (InsightService::getInstance($w)->isInsightOwner($user_id, $insight_class)) {
+                            $button_group .= HtmlBootstrap5::b(
+                                href: '/insights/manageMembers?insight_class=' . $insight_class,
+                                title: 'Manage Members',
+                                class: 'btn-secondary'
+                            );
                         }
                         $actions[] =  HtmlBootstrap5::buttonGroup($button_group);
                         $row[] = implode('', $actions);
