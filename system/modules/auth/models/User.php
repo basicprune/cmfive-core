@@ -211,7 +211,7 @@ class User extends DbObject
 
     public function getSelectOptionTitle()
     {
-        return $this->getFullName();
+        return StringSanitiser::sanitise($this->getFullName());
     }
 
     public function getSelectOptionValue()
@@ -234,7 +234,7 @@ class User extends DbObject
 
     /**
      * @param string $force
-     * @return string array of all roles that this user has
+     * @return array array of all roles that this user has
      */
     public function getRoles($force = false)
     {

@@ -151,7 +151,7 @@ class Attachment extends DbObject
      */
     public function getThumb()
     {
-        return Html::box(FileService::getInstance($this->w)->getDownloadUrl($this->fullpath), FileService::getInstance($this->w)->getThumbImg($this->fullpath));
+        return HtmlBootstrap5::box(FileService::getInstance($this->w)->getDownloadUrl($this->fullpath), FileService::getInstance($this->w)->getThumbImg($this->fullpath));
     }
 
     public function getDownloadUrl()
@@ -174,10 +174,10 @@ class Attachment extends DbObject
     {
         $view_url = $this->getViewUrl();
         if ($this->isDocument()) {
-            return Html::embedDocument($view_url, $width, $height);
+            return HtmlBootstrap5::embedDocument($view_url, $width, $height);
         }
 
-        return Html::a($view_url, $this->title);
+        return HtmlBootstrap5::a($view_url, $this->title);
     }
 
     /**
@@ -269,6 +269,22 @@ class Attachment extends DbObject
     public function getMimetype(): string
     {
         return $this->mimetype;
+    }
+
+    /**
+     * Get the bootstrap5 icon class associated with the mime-type of this attachment
+     * Useful for fallback icons, for example for pdf and video files where there is no getThumbnailUrl()
+     * @return string Bootstrap5 Icon class name
+     */
+    public function getBootstrap5IconClass(): string
+    {
+        if ($this->isDocument()) {
+            return "bi-filetype-doc";
+        }
+
+        // return bi-filetype-doc here as a fallback
+        $exploded = explode(".", $this->filename); // must create new variable here as end() requires ref
+        return "bi-filetype-doc bi-filetype-" . end($exploded);
     }
 
     /**

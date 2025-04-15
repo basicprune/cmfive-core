@@ -2,8 +2,21 @@
 
 function profile_GET(Web &$w)
 {
-    VueComponentRegister::registerComponent("autocomplete", new VueComponent("autocomplete", "/system/templates/vue-components/form/elements/autocomplete.vue.js", "/system/templates/vue-components/form/elements/autocomplete.vue.css"));
-    VueComponentRegister::registerComponent("profile-security", new VueComponent("profile-security", "/system/templates/vue-components/profile-security.vue.js"));
+    CmfiveScriptComponentRegister::registerComponent(
+        "UserEditComponent",
+        new CmfiveScriptComponent(
+            "/system/templates/base/dist/UserSecurity.js",
+            ["weight" => "200", "type" => "module"]
+        )
+    );
+
+    CmfiveScriptComponentRegister::registerComponent(
+        "AuthProfileForm",
+        new CmfiveScriptComponent(
+            "/system/templates/base/dist/AuthProfileForm.js",
+            ["weight" => "200", "type" => "module"]
+        )
+    );
 
     $user = AuthService::getInstance($w)->user();
     if (empty($user)) {
@@ -28,17 +41,18 @@ function profile_GET(Web &$w)
         "id" => $user->id,
         "account" => [
             "redirect_url" => $user->redirect_url,
-            "title" => $contact->getTitle(),
+            "title" => StringSanitiser::sanitise($contact->getTitle()),
             "titles" => $titles_array,
-            "firstname" => $contact->firstname,
-            "lastname" => $contact->lastname,
-            "othername" => $contact->othername,
-            "homephone" => $contact->homephone,
-            "workphone" => $contact->workphone,
-            "mobile" => $contact->mobile,
-            "priv_mobile" => $contact->priv_mobile,
-            "fax" => $contact->fax,
-            "email" => $contact->email,
+            "firstname" => StringSanitiser::sanitise($contact->firstname),
+            "lastname" => StringSanitiser::sanitise($contact->lastname),
+            "othername" => StringSanitiser::sanitise($contact->othername),
+            "homephone" => StringSanitiser::sanitise($contact->homephone),
+            "workphone" => StringSanitiser::sanitise($contact->workphone),
+            "mobile" => StringSanitiser::sanitise($contact->mobile),
+            "priv_mobile" => StringSanitiser::sanitise($contact->priv_mobile),
+            "fax" => StringSanitiser::sanitise($contact->fax),
+            "email" => StringSanitiser::sanitise($contact->email),
+            "language" => StringSanitiser::sanitise($user->language),
         ],
         "security" => [
             "new_password" => "",
@@ -46,6 +60,8 @@ function profile_GET(Web &$w)
             "is_mfa_enabled" => $user->is_mfa_enabled,
         ],
     ];
-
+// echo "<pre>";
+//     var_dump($user_details);
+// echo "</pre>";
     $w->ctx("user", $user_details);
 }

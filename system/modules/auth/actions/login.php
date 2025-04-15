@@ -2,13 +2,15 @@
 
 function login_GET(Web $w)
 {
+    $w->ctx('title', Config::get('auth.login_title', 'Login'));
+    
     // Check if logged in already
     $user = AuthService::getInstance($w)->user();
     if (AuthService::getInstance($w)->loggedIn() && AuthService::getInstance($w)->allowed($user->redirect_url)) {
         $w->redirect($w->localUrl(!empty($user->redirect_url) ? $user->redirect_url : "/main"));
     }
 
-    $loginform = Html::form([
+    $loginform = HtmlBootstrap5::form([
         ["Application Login", "section"],
         ["Username", "text", "login"],
         ["Password", "password", "password"],
@@ -24,7 +26,7 @@ function login_POST(Web $w)
 
     $request_data = json_decode(file_get_contents("php://input"), true);
     if (empty($request_data) || !array_key_exists("login", $request_data) || !array_key_exists("password", $request_data)) {
-        $w->error("Please enter your login and password", "/auth/login");
+        $w->out((new JsonResponse())->setErrorResponse("Please enter your login and password", "Please enter your login and password"));
     }
 
     $login = $request_data["login"];
@@ -32,7 +34,7 @@ function login_POST(Web $w)
     $mfa_code = array_key_exists("mfa_code", $request_data) ? $request_data["mfa_code"] : null;
 
     if (empty($login) || empty($password)) {
-        $w->error("Please enter your login and password", "/auth/login");
+        $w->out((new JsonResponse())->setErrorResponse("Please enter your login and password", "Please enter your login and password"));
     }
 
     $user = AuthService::getInstance($w)->getUserForLogin($login);

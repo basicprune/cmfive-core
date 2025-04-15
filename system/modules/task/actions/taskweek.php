@@ -1,5 +1,9 @@
 <?php
 // show task activity for the group and date span specified
+
+use Html\Form\InputField\Date;
+use Html\Form\Select;
+
 function taskweek_ALL(Web &$w)
 {
     TaskService::getInstance($w)->navigation($w, "");
@@ -20,9 +24,7 @@ function taskweek_ALL(Web &$w)
     $tasks = TaskService::getInstance($w)->getTaskWeek($taskgroup, $assignee, $from, $to);
 
     // set task activity heading
-    $line = [
-        ["An overview of the activity in Tasks: " . $from . " to " . $to],
-    ];
+    $line = [["An overview of the activity in Tasks: " . $from . " to " . $to]];
     if ($tasks) {
         // dont wanna keep displaying same date so set a variable for comparison
         $olddate = "";
@@ -43,7 +45,7 @@ function taskweek_ALL(Web &$w)
                 }
                 // display comments. if no group selected, display with link to task list with group preselected
                 $thisgroup = ($taskgroup != "") ? "" : "<a title=\"View Task Group\" href=\"" . WEBROOT . "/task/tasklist/?taskgroups=" . $task['task_group_id'] . "\">" . TaskService::getInstance($w)->getTaskGroupTitleById($task['task_group_id']) . "</a>:&nbsp;&nbsp;";
-                $line[] = ["<dd>" . date("g:i a", strtotime($task['dt_modified'])) . " - " . $thisgroup . "<a title=\"View Task Details\" href=\"" . WEBROOT . "/task/edit/" . $task['id'] . "\"><b>" . $task['title'] . "</b></a>: " . TaskService::getInstance($w)->findURL($task['comment']) . " - " . TaskService::getInstance($w)->getUserById($task['creator_id']) . "</dd>"];
+                $line[] = ["<dd>" . date("g:i a", strtotime($task['dt_modified'])) . " - " . $thisgroup . "<a title=\"View Task Details\" href=\"" . WEBROOT . "/task/edit/" . $task['id'] . "\"><b>" . StringSanitiser::sanitise($task['title']) . "</b></a>: " . TaskService::getInstance($w)->findURL($task['comment']) . " - " . TaskService::getInstance($w)->getUserById($task['creator_id']) . "</dd>"];
                 $olddate = formatDate($task['dt_modified']);
                 $i++;
             }
@@ -54,7 +56,7 @@ function taskweek_ALL(Web &$w)
     }
 
     // display
-    $lines = Html::table($line, null, "tablesorter", true);
+    $lines = HtmlBootstrap5::table($line, null, "tablesorter", true);
     $w->ctx("taskweek", $lines);
 
     // get list of groups of which i am a member
@@ -77,10 +79,28 @@ function taskweek_ALL(Web &$w)
         sort($members);
     }
 
-    // load the search filters
-    $a = Html::select("assignee", $members, Request::mixed('assignee'));
-    $w->ctx("assignee", $a);
+    $search_form = HtmlBootstrap5::filter("Search Tasks", [
+        new Select([
+            "id|name" => "taskgroup",
+            "label" => "Task Group",
+            "options" => $group
+        ]),
+        new Select([
+            "id|name" => "assignee",
+            "label" => "User",
+            "options" => $members
+        ]),
+        new Date([
+            "id|name" => "dt_from",
+            "label" => "From",
+            "value" => $from
+        ]),
+        new Date([
+            "id|name" => "dt_to",
+            "label" => "To date",
+            "value" => $to
+        ]),
+    ], $w->localUrl("/task/taskweek"), "POST");
 
-    $taskgroups = Html::select("taskgroup", $group, Request::mixed('taskgroup'));
-    $w->ctx("taskgroups", $taskgroups);
+    $w->ctx("search_form", $search_form);
 }

@@ -24,7 +24,7 @@ function edit_GET(Web $w)
         $instance->form_id = $form_id;
     }
 
-    $w->out(Html::multiColForm(
+    $w->out(HtmlBootstrap5::multiColForm(
         $instance->getEditForm($form),
         '/form-instance/edit/' . $instance->id . "?form_id=" . $form_id . "&redirect_url=" . $redirect_url . "&object_class=" . $object_class . "&object_id=" . $object_id
     ));
@@ -57,5 +57,5 @@ function edit_POST(Web $w)
 
     $form = $form_instance->getForm();
 
-    $w->msg($form->title . (!empty($p['id']) ? " updated" : " created"), $redirect_url . "#" . toSlug($form->title));
+    $w->msg($form->title . (!empty($p['id']) ? " updated" : " created"), $redirect_url . "#" . StringSanitiser::stripNonAlphaNumeric($form->title));
 }

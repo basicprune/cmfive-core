@@ -102,7 +102,7 @@ class ReportService extends DbService
         return ($a->dt_schedule < $b->dt_schedule) ? +1 : -1;
     }
 
-    // get list of modules for Html::select
+    // get list of modules for HtmlBootstrap5::select
     public function getModules()
     {
         $modules = $this->w->modules();
@@ -360,7 +360,7 @@ class ReportService extends DbService
         }
 
         if ($table != "") {
-            $fields = $this->_db->sql("show columns in " . $this->_db->quote($table))->fetchAll();
+            $fields = $this->_db->sql("show columns in " . $table)->fetchAll();
 
             if ($fields) {
                 $output = "<table><tr><td><b>Field</b></td><td><b>Type</b></td></tr>";
@@ -671,7 +671,8 @@ class ReportService extends DbService
             new MenuLinkStruct("Report Dashboard", "report/index")
         ];
         if (AuthService::getInstance($this->w)->user()->hasAnyRole(["report_editor", "report_admin"])) {
-            $list += [
+            $list = [
+                ...$list,
                 new MenuLinkStruct("Create a Report", "report/edit"),
                 new MenuLinkStruct("Connections", "report-connections"),
                 new MenuLinkStruct("Feeds Dashboard", "report/listfeed"),
